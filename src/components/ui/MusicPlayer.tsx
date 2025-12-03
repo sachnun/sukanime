@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useMusicPlayer } from '@/lib/MusicPlayerContext';
 import { Play, Pause, X } from 'lucide-react';
@@ -11,21 +11,16 @@ const BAR_HEIGHTS = [12, 10, 14, 11];
 export default function MusicPlayer() {
   const pathname = usePathname();
   const { currentTrack, isPlaying, toggle, stop, pause } = useMusicPlayer();
-  const wasOnWatchPage = useRef(false);
 
   // Hide on watch pages
   const isWatchPage = pathname.startsWith('/watch');
 
-  // Pause music when leaving watch page
+  // Pause music when entering watch page
   useEffect(() => {
-    if (isWatchPage) {
-      wasOnWatchPage.current = true;
-    } else if (wasOnWatchPage.current && isPlaying) {
-      // Just left watch page, pause the music
+    if (isWatchPage && isPlaying) {
       pause();
-      wasOnWatchPage.current = false;
     }
-  }, [isWatchPage, isPlaying, pause]);
+  }, [isWatchPage, pause]);
 
   // Don't render if no track or on watch page
   if (!currentTrack || isWatchPage) {
