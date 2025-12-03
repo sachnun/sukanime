@@ -53,7 +53,6 @@ async function WatchContent({ slug }: { slug: string }) {
           animePoster={animePoster}
           episodeTitle={episode.title}
           streamingServers={episode.streamingServers}
-          defaultStreamingUrl={episode.streamingUrl}
         />
 
         {/* Controls */}

@@ -12,7 +12,6 @@ interface VideoPlayerProps {
   animePoster: string;
   episodeTitle: string;
   streamingServers: StreamingServer[];
-  defaultStreamingUrl?: string;
 }
 
 export default function VideoPlayer({
@@ -22,12 +21,11 @@ export default function VideoPlayer({
   animePoster,
   episodeTitle,
   streamingServers,
-  defaultStreamingUrl,
 }: VideoPlayerProps) {
   const [selectedQuality, setSelectedQuality] = useState<string>('');
   const [selectedServer, setSelectedServer] = useState<string>('');
   const [selectedServerName, setSelectedServerName] = useState<string>('');
-  const [streamingUrl, setStreamingUrl] = useState<string>(defaultStreamingUrl || '');
+  const [streamingUrl, setStreamingUrl] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -73,10 +71,10 @@ export default function VideoPlayer({
 
   // Load streaming URL when server changes
   useEffect(() => {
-    if (selectedServer && !defaultStreamingUrl) {
+    if (selectedServer) {
       loadStreamingUrl(selectedServer);
     }
-  }, [selectedServer, defaultStreamingUrl]);
+  }, [selectedServer]);
 
   const loadStreamingUrl = async (dataContent: string) => {
     setIsLoading(true);
