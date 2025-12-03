@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, FreeMode } from 'swiper/modules';
-import { ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import AnimeCard from './AnimeCard';
+import AnimeCardSkeleton from './Skeleton';
 import { AnimeCard as AnimeCardType } from '@/types/anime';
 import type { Swiper as SwiperType } from 'swiper';
 
@@ -23,6 +24,7 @@ interface AnimeRowProps {
 
 export default function AnimeRow({ title, anime, href, showEpisode = true, fetchUrl }: AnimeRowProps) {
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const [items, setItems] = useState<AnimeCardType[]>(anime);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(!!fetchUrl);
@@ -87,8 +89,21 @@ export default function AnimeRow({ title, anime, href, showEpisode = true, fetch
         )}
       </div>
 
+      {/* Skeleton while loading */}
+      {!isReady && (
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-3 overflow-hidden">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex-shrink-0 w-[140px] sm:w-[160px] md:w-[180px]">
+                <AnimeCardSkeleton />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Swiper */}
-      <div className="overflow-hidden">
+      <div className={`overflow-hidden ${!isReady ? 'hidden' : ''}`}>
         <div className="px-4 sm:px-6 lg:px-8">
           <Swiper
             modules={[Navigation, FreeMode]}
@@ -99,6 +114,7 @@ export default function AnimeRow({ title, anime, href, showEpisode = true, fetch
               enabled: true,
               momentumBounce: false,
             }}
+            onSwiper={() => setIsReady(true)}
             onSlideChange={fetchUrl ? handleSlideChange : undefined}
             onReachEnd={fetchUrl ? loadMore : undefined}
             breakpoints={{
@@ -129,12 +145,10 @@ export default function AnimeRow({ title, anime, href, showEpisode = true, fetch
                 <AnimeCard anime={item} showEpisode={showEpisode} />
               </SwiperSlide>
             ))}
-            {/* Loading indicator */}
+            {/* Loading skeleton */}
             {isLoading && (
               <SwiperSlide>
-                <div className="flex items-center justify-center aspect-[2/3]">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
+                <AnimeCardSkeleton />
               </SwiperSlide>
             )}
           </Swiper>

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import AnimeRow from './AnimeRow';
+import AnimeCardSkeleton from './Skeleton';
 import { AnimeCard } from '@/types/anime';
-import { Loader2 } from 'lucide-react';
 
 interface LazyGenreRowProps {
   genre: string;
@@ -62,8 +62,14 @@ export default function LazyGenreRow({ genre, slug }: LazyGenreRowProps) {
           <div className="flex items-center justify-between mb-4 px-4 sm:px-6 lg:px-8">
             <h2 className="text-xl sm:text-2xl font-bold">Anime {genre}</h2>
           </div>
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="flex space-x-3 overflow-hidden">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <div key={i} className="flex-shrink-0 w-[140px] sm:w-[160px] md:w-[180px]">
+                  <AnimeCardSkeleton />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}

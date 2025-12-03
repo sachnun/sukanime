@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Music, Loader2, ExternalLink, Play, Pause } from 'lucide-react';
+import { Music, ExternalLink, Play, Pause } from 'lucide-react';
 import { useMusicPlayer } from '@/lib/MusicPlayerContext';
 
 interface MusicSectionProps {
@@ -89,8 +89,9 @@ export default function MusicSection({ title, japanese, excludeVideoIds = [] }: 
           <Music className="w-6 h-6 text-primary" />
           <h2 className="text-2xl font-bold">Musik</h2>
         </div>
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="space-y-3">
+          <div className="bg-card rounded-lg p-4 h-[72px] skeleton" />
+          <div className="bg-card rounded-lg p-4 h-[72px] skeleton" />
         </div>
       </section>
     );

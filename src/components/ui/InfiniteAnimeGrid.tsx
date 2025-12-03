@@ -4,7 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AnimeCard as AnimeCardType, Pagination } from '@/types/anime';
-import { Star, Play, Loader2 } from 'lucide-react';
+import { Star, Play } from 'lucide-react';
+import AnimeCardSkeleton from './Skeleton';
 
 interface InfiniteAnimeGridProps {
   initialAnime: AnimeCardType[];
@@ -124,15 +125,17 @@ export default function InfiniteAnimeGrid({
             )}
           </Link>
         ))}
+        
+        {/* Loading skeletons inside grid */}
+        {isLoading && Array.from({ length: 6 }).map((_, i) => (
+          <AnimeCardSkeleton key={`skeleton-${i}`} />
+        ))}
       </div>
 
-      {/* Loader */}
-      <div ref={loaderRef} className="flex justify-center py-8">
-        {isLoading && (
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        )}
+      {/* Loader trigger & end message */}
+      <div ref={loaderRef} className="py-8">
         {!pagination.hasNextPage && uniqueAnime.length > 0 && (
-          <p className="text-muted text-sm">Semua anime sudah ditampilkan</p>
+          <p className="text-muted text-sm text-center">Semua anime sudah ditampilkan</p>
         )}
       </div>
     </>

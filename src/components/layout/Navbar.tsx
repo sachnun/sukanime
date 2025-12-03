@@ -21,11 +21,11 @@ export default function Navbar() {
   useEffect(() => {
     const handleScroll = () => {
       if (hasHeroBanner) {
-        // Trigger after scrolling ~30% of hero (when text content area is reached)
+        // Trigger after scrolling ~15% of hero
         const heroHeight = window.innerWidth >= 640 
           ? window.innerHeight * 0.8 
-          : window.innerHeight * 0.7;
-        const scrollThreshold = heroHeight * 0.3;
+          : window.innerHeight * 0.55;
+        const scrollThreshold = heroHeight * 0.15;
         setIsScrolled(window.scrollY > scrollThreshold);
       } else {
         // For other pages, always show solid navbar

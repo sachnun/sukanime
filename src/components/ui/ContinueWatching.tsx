@@ -8,6 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getWatchHistory } from '@/lib/storage';
 import { WatchHistoryItem } from '@/types/anime';
+import AnimeCardSkeleton from './Skeleton';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -16,6 +17,7 @@ import 'swiper/css/free-mode';
 export default function ContinueWatching() {
   const [history, setHistory] = useState<WatchHistoryItem[]>([]);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const checkDesktop = () => setIsDesktop(window.innerWidth >= 768);
@@ -52,8 +54,21 @@ export default function ContinueWatching() {
         </Link>
       </div>
 
+      {/* Skeleton while loading */}
+      {!isReady && (
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-3 overflow-hidden">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex-shrink-0 w-[140px] sm:w-[160px] md:w-[180px]">
+                <AnimeCardSkeleton />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Swiper */}
-      <div className="overflow-hidden">
+      <div className={`overflow-hidden ${!isReady ? 'hidden' : ''}`}>
         <div className="px-4 sm:px-6 lg:px-8">
           <Swiper
             modules={[Navigation, FreeMode]}
@@ -64,6 +79,7 @@ export default function ContinueWatching() {
               enabled: true,
               momentumBounce: false,
             }}
+            onSwiper={() => setIsReady(true)}
             breakpoints={{
               480: {
                 slidesPerView: 3.3,

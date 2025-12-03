@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ExternalLink, Loader2 } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 interface TrailerSectionProps {
   title: string;
@@ -42,9 +42,7 @@ export default function TrailerSection({ title, japanese, onVideoIdFound }: Trai
       <h2 className="text-2xl font-bold mb-4">Trailer</h2>
       <div className="aspect-video rounded-lg overflow-hidden bg-black">
         {isLoading ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          </div>
+          <div className="w-full h-full skeleton" />
         ) : videoId ? (
           <iframe
             src={`https://www.youtube.com/embed/${videoId}`}
