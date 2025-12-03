@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { getWatchHistory, clearHistory } from '@/lib/storage';
 import { WatchHistoryItem } from '@/types/anime';
 import Link from 'next/link';
@@ -8,13 +8,15 @@ import Image from 'next/image';
 import { Clock, Trash2, Play } from 'lucide-react';
 
 export default function HistoryPage() {
-  const [history, setHistory] = useState<WatchHistoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setHistory(getWatchHistory());
-    setIsLoading(false);
-  }, []);
+  const [history, setHistory] = useState<WatchHistoryItem[]>(() => {
+    // Initialize from storage on first render (client-side only)
+    if (typeof window !== 'undefined') {
+      return getWatchHistory();
+    }
+    return [];
+  });
+  // Use a state initializer that checks if we're on client
+  const [isMounted] = useState(() => typeof window !== 'undefined');
 
   const handleClearHistory = () => {
     if (confirm('Apakah kamu yakin ingin menghapus semua riwayat?')) {
@@ -49,7 +51,8 @@ export default function HistoryPage() {
     }
   };
 
-  if (isLoading) {
+  // Show skeleton on server-side render
+  if (!isMounted) {
     return (
       <div className="pt-20 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

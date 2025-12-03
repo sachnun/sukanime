@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { Search, Menu, X, Bookmark, Clock, Home, Play, Calendar, Grid3X3 } from 'lucide-react';
+import { Search, Menu, X, Bookmark, Clock, Home, Play, Calendar, Grid3X3, Clapperboard } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 
 export default function Navbar() {
@@ -16,6 +16,7 @@ export default function Navbar() {
 
   // Check if current page has hero banner (home or anime detail)
   const hasHeroBanner = pathname === '/' || pathname.startsWith('/anime/');
+  const isWatchPage = pathname.startsWith('/watch/');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,7 +88,11 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-primary">SUKANIME</span>
+            {isWatchPage ? (
+              <Clapperboard className="w-7 h-7 text-white/80" />
+            ) : (
+              <span className="text-2xl font-bold text-primary">SUKANIME</span>
+            )}
           </Link>
 
           {/* Desktop Navigation */}

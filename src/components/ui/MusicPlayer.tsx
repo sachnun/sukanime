@@ -5,6 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useMusicPlayer } from '@/lib/MusicPlayerContext';
 import { Play, Pause, X } from 'lucide-react';
 
+// Pre-computed bar heights to avoid Math.random() during render
+const BAR_HEIGHTS = [12, 10, 14, 11];
+
 export default function MusicPlayer() {
   const pathname = usePathname();
   const { currentTrack, isPlaying, toggle, stop, pause } = useMusicPlayer();
@@ -81,12 +84,12 @@ export default function MusicPlayer() {
           {/* Playing indicator */}
           {isPlaying && (
             <div className="flex items-center justify-center gap-0.5 mt-2">
-              {[...Array(4)].map((_, i) => (
+              {BAR_HEIGHTS.map((height, i) => (
                 <div
                   key={i}
                   className="w-0.5 bg-green-500 rounded-full animate-pulse"
                   style={{
-                    height: `${8 + Math.random() * 8}px`,
+                    height: `${height}px`,
                     animationDelay: `${i * 0.15}s`,
                     animationDuration: '0.5s',
                   }}

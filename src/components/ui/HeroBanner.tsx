@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, EffectFade } from 'swiper/modules';
 import Image from 'next/image';
@@ -18,9 +18,17 @@ interface HeroBannerProps {
 
 export default function HeroBanner({ anime }: HeroBannerProps) {
   const [heroAnime, setHeroAnime] = useState<AnimeCard[]>(anime.slice(0, 5));
+  const hasFetched = useRef(false);
 
   // Lazy fetch episode slugs for anime that don't have them
   useEffect(() => {
+    if (hasFetched.current) return;
+    
+    const needsFetch = heroAnime.some(item => !item.latestEpisodeSlug);
+    if (!needsFetch) return;
+    
+    hasFetched.current = true;
+    
     const fetchMissingEpisodeSlugs = async () => {
       const updated = await Promise.all(
         heroAnime.map(async (item) => {
@@ -43,12 +51,9 @@ export default function HeroBanner({ anime }: HeroBannerProps) {
       );
       setHeroAnime(updated);
     };
-
-    // Only fetch if some anime don't have episode slugs
-    if (heroAnime.some(item => !item.latestEpisodeSlug)) {
-      fetchMissingEpisodeSlugs();
-    }
-  }, []);
+    
+    fetchMissingEpisodeSlugs();
+  }, [heroAnime]);
 
   if (!heroAnime || heroAnime.length === 0) return null;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ExternalLink, Loader2 } from 'lucide-react';
 
 interface TrailerSectionProps {
@@ -16,11 +16,7 @@ export default function TrailerSection({ title, japanese, onVideoIdFound }: Trai
   const searchQuery = japanese || title;
   const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${searchQuery} anime PV trailer`)}`;
 
-  useEffect(() => {
-    fetchTrailer();
-  }, []);
-
-  const fetchTrailer = async () => {
+  const fetchTrailer = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/trailer?q=${encodeURIComponent(`${searchQuery} anime PV trailer`)}`);
@@ -35,7 +31,11 @@ export default function TrailerSection({ title, japanese, onVideoIdFound }: Trai
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [searchQuery, onVideoIdFound]);
+
+  useEffect(() => {
+    fetchTrailer();
+  }, [fetchTrailer]);
 
   return (
     <section className="mb-10">

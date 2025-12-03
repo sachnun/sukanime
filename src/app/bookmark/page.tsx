@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { getBookmarks, removeBookmark } from '@/lib/storage';
 import { BookmarkItem } from '@/types/anime';
 import Link from 'next/link';
@@ -8,20 +8,23 @@ import Image from 'next/image';
 import { Bookmark, Trash2, Play } from 'lucide-react';
 
 export default function BookmarkPage() {
-  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setBookmarks(getBookmarks());
-    setIsLoading(false);
-  }, []);
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>(() => {
+    // Initialize from storage on first render (client-side only)
+    if (typeof window !== 'undefined') {
+      return getBookmarks();
+    }
+    return [];
+  });
+  // Use a state initializer that checks if we're on client
+  const [isMounted] = useState(() => typeof window !== 'undefined');
 
   const handleRemove = (slug: string) => {
     removeBookmark(slug);
     setBookmarks(getBookmarks());
   };
 
-  if (isLoading) {
+  // Show skeleton on server-side render
+  if (!isMounted) {
     return (
       <div className="pt-20 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

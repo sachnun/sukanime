@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import AnimeRow from './AnimeRow';
 import { AnimeCard } from '@/types/anime';
 import { Loader2 } from 'lucide-react';
@@ -15,6 +15,23 @@ export default function LazyGenreRow({ genre, slug }: LazyGenreRowProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const loadGenreAnime = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/genre/${slug}?page=1`);
+      const json = await res.json();
+
+      if (json.success && json.data) {
+        setAnime(json.data.anime.slice(0, 15));
+        setHasLoaded(true);
+      }
+    } catch (error) {
+      console.error(`Failed to load genre ${slug}:`, error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [slug]);
 
   useEffect(() => {
     if (hasLoaded) return;
@@ -36,24 +53,7 @@ export default function LazyGenreRow({ genre, slug }: LazyGenreRowProps) {
     }
 
     return () => observer.disconnect();
-  }, [hasLoaded, isLoading, slug]);
-
-  const loadGenreAnime = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/genre/${slug}?page=1`);
-      const json = await res.json();
-
-      if (json.success && json.data) {
-        setAnime(json.data.anime.slice(0, 15));
-        setHasLoaded(true);
-      }
-    } catch (error) {
-      console.error(`Failed to load genre ${slug}:`, error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [hasLoaded, isLoading, loadGenreAnime]);
 
   return (
     <div ref={containerRef}>
