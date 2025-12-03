@@ -9,7 +9,7 @@ import WatchButton from './WatchButton';
 import TrailerSection from './TrailerSection';
 import MusicSection from './MusicSection';
 import Synopsis from './Synopsis';
-import { AnimeGridSkeleton } from '@/components/ui/Skeleton';
+import { AnimeDetailSkeleton } from '@/components/ui/Skeleton';
 
 interface AnimePageProps {
   params: Promise<{ slug: string }>;
@@ -231,13 +231,7 @@ export default async function AnimePage({ params }: AnimePageProps) {
   const { slug } = await params;
   
   return (
-    <Suspense
-      fallback={
-        <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AnimeGridSkeleton count={12} />
-        </div>
-      }
-    >
+    <Suspense fallback={<AnimeDetailSkeleton />}>
       <AnimeDetailContent slug={slug} />
     </Suspense>
   );

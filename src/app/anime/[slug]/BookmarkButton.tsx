@@ -30,22 +30,17 @@ export default function BookmarkButton({ slug, title, poster }: BookmarkButtonPr
   return (
     <button
       onClick={toggleBookmark}
-      className={`flex items-center gap-2 px-6 py-3 rounded font-semibold transition-colors ${
+      title={bookmarked ? 'Tersimpan' : 'Simpan'}
+      className={`flex items-center justify-center w-12 h-12 rounded transition-colors ${
         bookmarked
           ? 'bg-white text-black hover:bg-gray-200'
           : 'bg-gray-600/70 hover:bg-gray-600'
       }`}
     >
       {bookmarked ? (
-        <>
-          <BookmarkCheck className="w-5 h-5" />
-          Tersimpan
-        </>
+        <BookmarkCheck className="w-5 h-5" />
       ) : (
-        <>
-          <Bookmark className="w-5 h-5" />
-          Simpan
-        </>
+        <Bookmark className="w-5 h-5" />
       )}
     </button>
   );
