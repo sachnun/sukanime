@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { getHome, getGenres, getAnimeDetail } from '@/lib/api';
 import HeroBanner from '@/components/ui/HeroBanner';
 import AnimeRow from '@/components/ui/AnimeRow';
+import ContinueWatching from '@/components/ui/ContinueWatching';
 import LazyGenreRow from '@/components/ui/LazyGenreRow';
 import InfiniteAnimeGrid from '@/components/ui/InfiniteAnimeGrid';
 import { HeroBannerSkeleton, AnimeRowSkeleton } from '@/components/ui/Skeleton';
@@ -46,6 +47,9 @@ async function HomeContent() {
           href="/ongoing"
           fetchUrl="/api/ongoing"
         />
+
+        {/* Continue Watching - Client Component */}
+        <ContinueWatching />
 
         {/* Genre-based rows - Lazy loaded */}
         {genresData.genres.map((genre) => (

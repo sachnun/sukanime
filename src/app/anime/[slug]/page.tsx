@@ -3,8 +3,9 @@ import { getAnimeDetail } from '@/lib/api';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, Play, Calendar, Clock, Film, Building2, Users } from 'lucide-react';
+import { Star, Calendar, Clock, Film, Building2, Users } from 'lucide-react';
 import BookmarkButton from './BookmarkButton';
+import WatchButton from './WatchButton';
 import TrailerSection from './TrailerSection';
 import MusicSection from './MusicSection';
 import Synopsis from './Synopsis';
@@ -116,13 +117,10 @@ async function AnimeDetailContent({ slug }: { slug: string }) {
               {/* Actions */}
               <div className="flex flex-wrap justify-center md:justify-start gap-4 mb-6">
                 {anime.episodes.length > 0 && (
-                  <Link
-                    href={`/watch/${anime.episodes[anime.episodes.length - 1].slug}`}
-                    className="flex items-center gap-2 bg-primary hover:bg-primary-hover px-6 py-3 rounded font-semibold transition-colors"
-                  >
-                    <Play className="w-5 h-5 fill-white" />
-                    Tonton Sekarang
-                  </Link>
+                  <WatchButton
+                    animeSlug={slug}
+                    firstEpisodeSlug={anime.episodes[anime.episodes.length - 1].slug}
+                  />
                 )}
                 <BookmarkButton
                   slug={slug}

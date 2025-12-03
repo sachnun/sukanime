@@ -2,14 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, EffectFade } from 'swiper/modules';
+import { Autoplay, EffectFade } from 'swiper/modules';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Play, Info, Star } from 'lucide-react';
 import { AnimeCard } from '@/types/anime';
 
 import 'swiper/css';
-import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 
 interface HeroBannerProps {
@@ -58,17 +57,13 @@ export default function HeroBanner({ anime }: HeroBannerProps) {
   if (!heroAnime || heroAnime.length === 0) return null;
 
   return (
-    <section className="relative h-[70vh] sm:h-[80vh] w-full">
+    <section className="relative h-[55vh] sm:h-[70vh] md:h-[80vh] w-full">
       <Swiper
-        modules={[Autoplay, Pagination, EffectFade]}
+        modules={[Autoplay, EffectFade]}
         effect="fade"
         autoplay={{
           delay: 5000,
           disableOnInteraction: false,
-        }}
-        pagination={{
-          clickable: true,
-          el: '.hero-pagination',
         }}
         loop
         className="h-full w-full"
@@ -156,9 +151,6 @@ export default function HeroBanner({ anime }: HeroBannerProps) {
           </SwiperSlide>
         ))}
       </Swiper>
-      
-      {/* Pagination dots - positioned above the content rows */}
-      <div className="hero-pagination absolute bottom-28 left-0 right-0 z-10 flex justify-center gap-2" />
     </section>
   );
 }

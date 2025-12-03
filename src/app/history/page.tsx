@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getWatchHistory, clearHistory } from '@/lib/storage';
 import { WatchHistoryItem } from '@/types/anime';
 import Link from 'next/link';
@@ -8,15 +8,13 @@ import Image from 'next/image';
 import { Clock, Trash2, Play } from 'lucide-react';
 
 export default function HistoryPage() {
-  const [history, setHistory] = useState<WatchHistoryItem[]>(() => {
-    // Initialize from storage on first render (client-side only)
-    if (typeof window !== 'undefined') {
-      return getWatchHistory();
-    }
-    return [];
-  });
-  // Use a state initializer that checks if we're on client
-  const [isMounted] = useState(() => typeof window !== 'undefined');
+  const [history, setHistory] = useState<WatchHistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setHistory(getWatchHistory());
+    setIsLoading(false);
+  }, []);
 
   const handleClearHistory = () => {
     if (confirm('Apakah kamu yakin ingin menghapus semua riwayat?')) {
@@ -51,12 +49,14 @@ export default function HistoryPage() {
     }
   };
 
-  // Show skeleton on server-side render
-  if (!isMounted) {
+  // Show skeleton while loading
+  if (isLoading) {
     return (
       <div className="pt-20 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold mb-8">Riwayat Nonton</h1>
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold">Riwayat Nonton</h1>
+          </div>
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="h-24 rounded-lg skeleton" />
@@ -71,14 +71,15 @@ export default function HistoryPage() {
     <div className="pt-20 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Riwayat Nonton</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Riwayat Nonton</h1>
           {history.length > 0 && (
             <button
               onClick={handleClearHistory}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded transition-colors text-sm"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-red-600 hover:bg-red-700 rounded transition-colors text-xs sm:text-sm"
             >
-              <Trash2 className="w-4 h-4" />
-              Hapus Semua
+              <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Hapus Semua</span>
+              <span className="sm:hidden">Hapus</span>
             </button>
           )}
         </div>

@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
-import { getEpisodeDetail } from '@/lib/api';
+import { getEpisodeDetail, getAnimeDetail } from '@/lib/api';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Home, List } from 'lucide-react';
 import VideoPlayer from './VideoPlayer';
+import EpisodeNavigation from './EpisodeNavigation';
 import DownloadSection from './DownloadSection';
 
 interface WatchPageProps {
@@ -27,8 +27,17 @@ export async function generateMetadata({ params }: WatchPageProps) {
 
 async function WatchContent({ slug }: { slug: string }) {
   let episode;
+  let animePoster = '';
+  
   try {
     episode = await getEpisodeDetail(slug);
+    // Fetch anime detail to get poster
+    try {
+      const animeDetail = await getAnimeDetail(episode.anime.slug);
+      animePoster = animeDetail.poster;
+    } catch {
+      // Poster fetch failed, continue without it
+    }
   } catch {
     notFound();
   }
@@ -41,7 +50,7 @@ async function WatchContent({ slug }: { slug: string }) {
           episodeSlug={slug}
           animeSlug={episode.anime.slug}
           animeTitle={episode.anime.title}
-          animePoster=""
+          animePoster={animePoster}
           episodeTitle={episode.title}
           streamingServers={episode.streamingServers}
           defaultStreamingUrl={episode.streamingUrl}
@@ -50,55 +59,11 @@ async function WatchContent({ slug }: { slug: string }) {
         {/* Controls */}
         <div className="px-4 sm:px-6 lg:px-8 py-4">
           {/* Navigation */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              {episode.prevEpisode ? (
-                <Link
-                  href={`/watch/${episode.prevEpisode}`}
-                  className="flex items-center gap-1 px-4 py-2 bg-card hover:bg-card-hover rounded transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span className="hidden sm:inline">Sebelumnya</span>
-                </Link>
-              ) : (
-                <span className="flex items-center gap-1 px-4 py-2 bg-card rounded opacity-50 cursor-not-allowed">
-                  <ChevronLeft className="w-4 h-4" />
-                  <span className="hidden sm:inline">Sebelumnya</span>
-                </span>
-              )}
-
-              {episode.nextEpisode ? (
-                <Link
-                  href={`/watch/${episode.nextEpisode}`}
-                  className="flex items-center gap-1 px-4 py-2 bg-card hover:bg-card-hover rounded transition-colors"
-                >
-                  <span className="hidden sm:inline">Selanjutnya</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              ) : (
-                <span className="flex items-center gap-1 px-4 py-2 bg-card rounded opacity-50 cursor-not-allowed">
-                  <span className="hidden sm:inline">Selanjutnya</span>
-                  <ChevronRight className="w-4 h-4" />
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Link
-                href={`/anime/${episode.anime.slug}`}
-                className="flex items-center gap-1 px-4 py-2 bg-card hover:bg-card-hover rounded transition-colors"
-              >
-                <List className="w-4 h-4" />
-                <span className="hidden sm:inline">Semua Episode</span>
-              </Link>
-              <Link
-                href="/"
-                className="flex items-center gap-1 px-4 py-2 bg-card hover:bg-card-hover rounded transition-colors"
-              >
-                <Home className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
+          <EpisodeNavigation
+            prevEpisode={episode.prevEpisode}
+            nextEpisode={episode.nextEpisode}
+            animeSlug={episode.anime.slug}
+          />
 
           {/* Episode Info */}
           <div className="mb-6">

@@ -1,14 +1,47 @@
+'use client';
+
+import { useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Star, Play } from 'lucide-react';
+import { Star, Play, Clock } from 'lucide-react';
 import { AnimeCard as AnimeCardType } from '@/types/anime';
+import { getNextReleaseTime, getReleaseTimeColor } from '@/lib/schedule';
 
 interface AnimeCardProps {
   anime: AnimeCardType;
   showEpisode?: boolean;
 }
 
+// Subscribe to time updates every minute
+const subscribeToMinute = (callback: () => void) => {
+  const interval = setInterval(callback, 60000);
+  return () => clearInterval(interval);
+};
+
+// Get current minute timestamp
+const getMinuteSnapshot = () => Math.floor(Date.now() / 60000);
+
+// Server snapshot - always return 0
+const getServerSnapshot = () => 0;
+
 export default function AnimeCard({ anime, showEpisode = true }: AnimeCardProps) {
+  // Subscribe to minute changes - will cause re-render every minute
+  const minuteKey = useSyncExternalStore(
+    subscribeToMinute,
+    getMinuteSnapshot,
+    getServerSnapshot
+  );
+
+  // Check if we're on client (minuteKey > 0 means client)
+  const isClient = minuteKey > 0;
+
+  // Only calculate on client
+  const releaseInfo = isClient && anime.releaseDay 
+    ? getNextReleaseTime(anime.releaseDay, anime.releaseDate) 
+    : null;
+
+  const releaseColor = getReleaseTimeColor(releaseInfo);
+
   return (
     <Link href={`/anime/${anime.slug}`} className="group block">
       <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-card">
@@ -54,8 +87,15 @@ export default function AnimeCard({ anime, showEpisode = true }: AnimeCardProps)
 
       {/* Release info */}
       {anime.releaseDay && (
-        <p className="text-xs text-muted mt-1">
-          {anime.releaseDay} {anime.releaseDate && `• ${anime.releaseDate}`}
+        <p className={`text-xs mt-1 flex items-center gap-1 ${releaseInfo ? releaseColor : 'text-muted'}`}>
+          {releaseInfo ? (
+            <>
+              <Clock className="w-3 h-3" />
+              <span>{releaseInfo.text}</span>
+            </>
+          ) : (
+            <span>{anime.releaseDay}</span>
+          )}
         </p>
       )}
     </Link>
