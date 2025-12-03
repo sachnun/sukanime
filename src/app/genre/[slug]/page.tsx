@@ -11,7 +11,7 @@ interface GenreDetailPageProps {
 export async function generateMetadata({ params }: GenreDetailPageProps) {
   const { slug } = await params;
   return {
-    title: `Anime ${slug.charAt(0).toUpperCase() + slug.slice(1)} - SukAnime`,
+    title: `Anime ${slug.charAt(0).toUpperCase() + slug.slice(1)}`,
     description: `Daftar anime genre ${slug} dengan subtitle Indonesia`,
   };
 }

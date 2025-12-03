@@ -4,7 +4,7 @@ import InfiniteAnimeGrid from '@/components/ui/InfiniteAnimeGrid';
 import { AnimeGridSkeleton } from '@/components/ui/Skeleton';
 
 export const metadata = {
-  title: 'Anime Ongoing - SukAnime',
+  title: 'Anime Ongoing',
   description: 'Daftar anime yang sedang tayang dengan subtitle Indonesia',
 };
 

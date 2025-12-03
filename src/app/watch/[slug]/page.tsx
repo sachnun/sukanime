@@ -15,12 +15,12 @@ export async function generateMetadata({ params }: WatchPageProps) {
   try {
     const episode = await getEpisodeDetail(slug);
     return {
-      title: `${episode.title} - SukAnime`,
+      title: `${episode.title}`,
       description: `Nonton ${episode.title} subtitle Indonesia`,
     };
   } catch {
     return {
-      title: 'Episode Not Found - SukAnime',
+      title: 'Episode Not Found',
     };
   }
 }

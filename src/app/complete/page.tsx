@@ -4,7 +4,7 @@ import InfiniteAnimeGrid from '@/components/ui/InfiniteAnimeGrid';
 import { AnimeGridSkeleton } from '@/components/ui/Skeleton';
 
 export const metadata = {
-  title: 'Anime Complete - SukAnime',
+  title: 'Anime Complete',
   description: 'Daftar anime yang sudah tamat dengan subtitle Indonesia',
 };
 

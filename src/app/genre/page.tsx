@@ -3,7 +3,7 @@ import { getGenres } from '@/lib/api';
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Genre Anime - SukAnime',
+  title: 'Genre Anime',
   description: 'Jelajahi anime berdasarkan genre favorit kamu',
 };
 

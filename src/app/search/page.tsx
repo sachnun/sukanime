@@ -12,7 +12,7 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
   const params = await searchParams;
   const query = params.q || '';
   return {
-    title: query ? `Hasil pencarian "${query}" - SukAnime` : 'Cari Anime - SukAnime',
+    title: query ? `Hasil pencarian "${query}"` : 'Cari Anime',
     description: `Cari anime dengan kata kunci "${query}"`,
   };
 }

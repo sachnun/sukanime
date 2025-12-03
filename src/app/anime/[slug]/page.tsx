@@ -16,12 +16,12 @@ export async function generateMetadata({ params }: AnimePageProps) {
   try {
     const anime = await getAnimeDetail(slug);
     return {
-      title: `${anime.title} - SukAnime`,
+      title: `${anime.title}`,
       description: anime.synopsis?.slice(0, 160),
     };
   } catch {
     return {
-      title: 'Anime Not Found - SukAnime',
+      title: 'Anime Not Found',
     };
   }
 }

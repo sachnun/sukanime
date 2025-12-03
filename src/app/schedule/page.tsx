@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Calendar } from 'lucide-react';
 
 export const metadata = {
-  title: 'Jadwal Rilis Anime - SukAnime',
+  title: 'Jadwal Rilis Anime',
   description: 'Jadwal rilis anime terbaru setiap hari',
 };
 
