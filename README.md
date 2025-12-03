@@ -21,6 +21,12 @@ A modern Netflix-style anime streaming website built with Next.js 16 and Tailwin
 - **Carousel:** Swiper.js
 - **Language:** TypeScript
 
+## Data Source
+
+Anime data is provided by [Otakudesu API](https://github.com/sachnun/otakudesu-api) - a REST API for scraping anime data from Otakudesu, built with NestJS.
+
+API Endpoint: `https://otakudesu-api.zeabur.app`
+
 ## Getting Started
 
 ### Prerequisites
