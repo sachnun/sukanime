@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, FreeMode } from 'swiper/modules';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import AnimeCard from './AnimeCard';
 import { AnimeCard as AnimeCardType } from '@/types/anime';
+import type { Swiper as SwiperType } from 'swiper';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -17,10 +18,15 @@ interface AnimeRowProps {
   anime: AnimeCardType[];
   href?: string;
   showEpisode?: boolean;
+  fetchUrl?: string; // API URL for infinite loading
 }
 
-export default function AnimeRow({ title, anime, href, showEpisode = true }: AnimeRowProps) {
+export default function AnimeRow({ title, anime, href, showEpisode = true, fetchUrl }: AnimeRowProps) {
   const [isDesktop, setIsDesktop] = useState(false);
+  const [items, setItems] = useState<AnimeCardType[]>(anime);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(!!fetchUrl);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const checkDesktop = () => setIsDesktop(window.innerWidth >= 768);
@@ -29,10 +35,39 @@ export default function AnimeRow({ title, anime, href, showEpisode = true }: Ani
     return () => window.removeEventListener('resize', checkDesktop);
   }, []);
 
-  if (!anime || anime.length === 0) return null;
+  const loadMore = useCallback(async () => {
+    if (isLoading || !hasNextPage || !fetchUrl) return;
+
+    setIsLoading(true);
+    try {
+      const nextPage = currentPage + 1;
+      const res = await fetch(`${fetchUrl}?page=${nextPage}`);
+      const json = await res.json();
+
+      if (json.success && json.data) {
+        setItems((prev) => [...prev, ...json.data.anime]);
+        setCurrentPage(nextPage);
+        setHasNextPage(json.data.pagination.hasNextPage);
+      }
+    } catch (error) {
+      console.error('Failed to load more anime:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoading, hasNextPage, fetchUrl, currentPage]);
+
+  const handleSlideChange = (swiper: SwiperType) => {
+    // Load more when reaching near the end (5 slides before end)
+    const slidesFromEnd = swiper.slides.length - swiper.activeIndex - swiper.slidesPerViewDynamic();
+    if (slidesFromEnd <= 5 && hasNextPage && !isLoading) {
+      loadMore();
+    }
+  };
+
+  if (!items || items.length === 0) return null;
 
   // Remove duplicates based on slug
-  const uniqueAnime = anime.filter(
+  const uniqueAnime = items.filter(
     (item, index, self) => index === self.findIndex((a) => a.slug === item.slug)
   );
 
@@ -64,6 +99,8 @@ export default function AnimeRow({ title, anime, href, showEpisode = true }: Ani
               enabled: true,
               momentumBounce: false,
             }}
+            onSlideChange={fetchUrl ? handleSlideChange : undefined}
+            onReachEnd={fetchUrl ? loadMore : undefined}
             breakpoints={{
               480: {
                 slidesPerView: 3.3,
@@ -92,6 +129,14 @@ export default function AnimeRow({ title, anime, href, showEpisode = true }: Ani
                 <AnimeCard anime={item} showEpisode={showEpisode} />
               </SwiperSlide>
             ))}
+            {/* Loading indicator */}
+            {isLoading && (
+              <SwiperSlide>
+                <div className="flex items-center justify-center aspect-[2/3]">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              </SwiperSlide>
+            )}
           </Swiper>
         </div>
       </div>

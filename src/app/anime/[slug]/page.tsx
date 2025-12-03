@@ -5,6 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Play, Calendar, Clock, Film, Building2, Users } from 'lucide-react';
 import BookmarkButton from './BookmarkButton';
+import TrailerSection from './TrailerSection';
+import MusicSection from './MusicSection';
+import Synopsis from './Synopsis';
 import { AnimeGridSkeleton } from '@/components/ui/Skeleton';
 
 interface AnimePageProps {
@@ -159,10 +162,18 @@ async function AnimeDetailContent({ slug }: { slug: string }) {
       {/* Synopsis & Episodes */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Synopsis */}
-        <section className="mb-10">
-          <h2 className="text-2xl font-bold mb-4">Sinopsis</h2>
-          <p className="text-gray-300 leading-relaxed">{anime.synopsis}</p>
-        </section>
+        {anime.synopsis && (
+          <section className="mb-10">
+            <h2 className="text-2xl font-bold mb-4">Sinopsis</h2>
+            <Synopsis text={anime.synopsis} />
+          </section>
+        )}
+
+        {/* Trailer */}
+        <TrailerSection title={anime.title} japanese={anime.japanese} />
+
+        {/* Music (Opening & Ending) */}
+        <MusicSection title={anime.title} japanese={anime.japanese} />
 
         {/* Episodes */}
         {anime.episodes.length > 0 && (

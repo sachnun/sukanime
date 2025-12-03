@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { Search, Menu, X, Bookmark, Clock, Home, Play, Calendar, Grid3X3 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -12,15 +12,24 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Check if current page has hero banner (home or anime detail)
+  const hasHeroBanner = pathname === '/' || pathname.startsWith('/anime/');
 
   useEffect(() => {
     const handleScroll = () => {
-      // Trigger after scrolling ~30% of hero (when text content area is reached)
-      const heroHeight = window.innerWidth >= 640 
-        ? window.innerHeight * 0.8 
-        : window.innerHeight * 0.7;
-      const scrollThreshold = heroHeight * 0.3;
-      setIsScrolled(window.scrollY > scrollThreshold);
+      if (hasHeroBanner) {
+        // Trigger after scrolling ~30% of hero (when text content area is reached)
+        const heroHeight = window.innerWidth >= 640 
+          ? window.innerHeight * 0.8 
+          : window.innerHeight * 0.7;
+        const scrollThreshold = heroHeight * 0.3;
+        setIsScrolled(window.scrollY > scrollThreshold);
+      } else {
+        // For other pages, always show solid navbar
+        setIsScrolled(true);
+      }
     };
     
     // Check on mount
@@ -32,7 +41,7 @@ export default function Navbar() {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
     };
-  }, []);
+  }, [hasHeroBanner]);
 
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
@@ -95,9 +104,9 @@ export default function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             {/* Search */}
-            <div className="relative">
+            <div className="relative flex items-center">
               {isSearchOpen ? (
                 <form onSubmit={handleSearch} className="flex items-center">
                   <input
@@ -106,12 +115,12 @@ export default function Navbar() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Cari anime..."
-                    className="w-40 sm:w-64 bg-black/80 border border-gray-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-white transition-all"
+                    className="w-40 sm:w-64 bg-black/80 border border-gray-600 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setIsSearchOpen(false)}
-                    className="ml-2 text-gray-400 hover:text-white"
+                    className="ml-2 p-2 text-gray-400 hover:text-white transition-colors"
                   >
                     <X size={20} />
                   </button>
@@ -119,7 +128,7 @@ export default function Navbar() {
               ) : (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className="text-gray-300 hover:text-white transition-colors"
+                  className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <Search size={20} />
                 </button>
@@ -127,11 +136,11 @@ export default function Navbar() {
             </div>
 
             {/* Bookmark & History (Desktop) */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Link href="/bookmark" className="text-gray-300 hover:text-white transition-colors">
+            <div className="hidden md:flex items-center">
+              <Link href="/bookmark" className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
                 <Bookmark size={20} />
               </Link>
-              <Link href="/history" className="text-gray-300 hover:text-white transition-colors">
+              <Link href="/history" className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
                 <Clock size={20} />
               </Link>
             </div>
@@ -139,7 +148,7 @@ export default function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden text-gray-300 hover:text-white"
+              className="md:hidden p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>

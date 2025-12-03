@@ -1,7 +1,9 @@
 import { Suspense } from 'react';
-import { getHome, getGenres, getAnimeByGenre, getAnimeDetail } from '@/lib/api';
+import { getHome, getGenres, getAnimeDetail } from '@/lib/api';
 import HeroBanner from '@/components/ui/HeroBanner';
 import AnimeRow from '@/components/ui/AnimeRow';
+import LazyGenreRow from '@/components/ui/LazyGenreRow';
+import InfiniteAnimeGrid from '@/components/ui/InfiniteAnimeGrid';
 import { HeroBannerSkeleton, AnimeRowSkeleton } from '@/components/ui/Skeleton';
 import { AnimeCard } from '@/types/anime';
 
@@ -30,20 +32,6 @@ async function HomeContent() {
     })
   );
 
-  // Get some anime by popular genres
-  const popularGenres = ['action', 'romance', 'comedy', 'fantasy'];
-  const genreAnimePromises = popularGenres.map(async (genre) => {
-    try {
-      const data = await getAnimeByGenre(genre, 1);
-      return { genre: data.genre, anime: data.anime.slice(0, 15) };
-    } catch {
-      return null;
-    }
-  });
-
-  const genreAnimeResults = await Promise.all(genreAnimePromises);
-  const genreAnime = genreAnimeResults.filter(Boolean);
-
   return (
     <>
       {/* Hero Banner */}
@@ -58,26 +46,33 @@ async function HomeContent() {
           href="/ongoing"
         />
 
-        {/* Complete Anime */}
-        <AnimeRow
-          title="Anime Tamat"
-          anime={homeData.complete}
-          href="/complete"
-          showEpisode={false}
-        />
-
-        {/* Genre-based rows */}
-        {genreAnime.map((item) => (
-          item && (
-            <AnimeRow
-              key={item.genre}
-              title={`Anime ${item.genre}`}
-              anime={item.anime}
-              href={`/genre/${item.genre.toLowerCase()}`}
-              showEpisode={false}
-            />
-          )
+        {/* Genre-based rows - Lazy loaded */}
+        {genresData.genres.map((genre) => (
+          <LazyGenreRow
+            key={genre.slug}
+            genre={genre.name}
+            slug={genre.slug}
+          />
         ))}
+
+        {/* Complete Anime - Infinite Scroll */}
+        <section className="px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Anime Tamat</h2>
+          </div>
+          <InfiniteAnimeGrid
+            initialAnime={homeData.complete}
+            initialPagination={{
+              currentPage: 1,
+              totalPages: 10,
+              itemsPerPage: 24,
+              hasNextPage: true,
+              hasPrevPage: false,
+            }}
+            fetchUrl="/api/complete"
+            showEpisode={false}
+          />
+        </section>
       </div>
     </>
   );

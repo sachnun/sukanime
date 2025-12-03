@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { StreamingServer } from '@/types/anime';
 import { addToHistory } from '@/lib/storage';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { useVideoPlayer } from '@/lib/VideoPlayerContext';
+import { AlertCircle, RefreshCw, Minimize2 } from 'lucide-react';
 
 interface VideoPlayerProps {
   episodeSlug: string;
@@ -24,11 +26,18 @@ export default function VideoPlayer({
   streamingServers,
   defaultStreamingUrl,
 }: VideoPlayerProps) {
+  const router = useRouter();
+  const { minimize, close } = useVideoPlayer();
   const [selectedQuality, setSelectedQuality] = useState<string>('');
   const [selectedServer, setSelectedServer] = useState<string>('');
   const [streamingUrl, setStreamingUrl] = useState<string>(defaultStreamingUrl || '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
+
+  // Close miniplayer when entering watch page (full player takes over)
+  useEffect(() => {
+    close();
+  }, [close]);
 
   // Helper function to extract quality number (e.g., "1080p" -> 1080)
   const getQualityNumber = (quality: string): number => {
@@ -113,6 +122,19 @@ export default function VideoPlayer({
     loadStreamingUrl(dataContent);
   };
 
+  const handleMinimize = () => {
+    if (streamingUrl) {
+      minimize({
+        streamingUrl,
+        episodeSlug,
+        animeSlug,
+        animeTitle,
+        episodeTitle,
+      });
+      router.back();
+    }
+  };
+
   const currentQualityServers = streamingServers.find((s) => s.quality === selectedQuality);
 
   return (
@@ -135,12 +157,22 @@ export default function VideoPlayer({
             </button>
           </div>
         ) : streamingUrl ? (
-          <iframe
-            src={streamingUrl}
-            className="absolute inset-0 w-full h-full"
-            allowFullScreen
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          />
+          <>
+            <iframe
+              src={streamingUrl}
+              className="absolute inset-0 w-full h-full"
+              allowFullScreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            />
+            {/* Minimize button */}
+            <button
+              onClick={handleMinimize}
+              className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center bg-black/60 hover:bg-black/80 transition-colors z-10"
+              title="Mini player"
+            >
+              <Minimize2 className="w-4 h-4 text-white" />
+            </button>
+          </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-muted">Pilih server untuk memutar video</p>

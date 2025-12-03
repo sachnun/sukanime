@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
+import { MusicPlayerProvider } from "@/lib/MusicPlayerContext";
+import { VideoPlayerProvider } from "@/lib/VideoPlayerContext";
+import MusicPlayer from "@/components/ui/MusicPlayer";
+import VideoMiniPlayer from "@/components/ui/VideoMiniPlayer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,8 +30,14 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={`${inter.variable} antialiased`}>
-        <Navbar />
-        <main className="min-h-screen">{children}</main>
+        <VideoPlayerProvider>
+          <MusicPlayerProvider>
+            <Navbar />
+            <main className="min-h-screen">{children}</main>
+            <MusicPlayer />
+            <VideoMiniPlayer />
+          </MusicPlayerProvider>
+        </VideoPlayerProvider>
       </body>
     </html>
   );
