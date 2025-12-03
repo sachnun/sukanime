@@ -44,6 +44,7 @@ async function HomeContent() {
           title="Sedang Tayang"
           anime={homeData.ongoing}
           href="/ongoing"
+          fetchUrl="/api/ongoing"
         />
 
         {/* Genre-based rows - Lazy loaded */}
