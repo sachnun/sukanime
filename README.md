@@ -67,11 +67,7 @@ npm run dev
 
 ### Download APK
 
-You can download the latest APK from [GitHub Actions](https://github.com/sachnun/sukanime/actions/workflows/build-apk.yml):
-
-1. Go to the **Actions** tab
-2. Click on the latest successful **Build Android APK** workflow
-3. Download the **sukanime-debug-apk** artifact
+Download the latest APK from [GitHub Releases](https://github.com/sachnun/sukanime/releases/latest).
 
 ### Build APK Locally
 
@@ -87,10 +83,10 @@ npm install
 npm run cap:sync
 
 # Build APK (requires Android SDK)
-cd android && ./gradlew assembleDebug
+cd android && ./gradlew assembleRelease
 ```
 
-The APK will be at `android/app/build/outputs/apk/debug/app-debug.apk`
+The APK will be at `android/app/build/outputs/apk/release/app-release.apk`
 
 ## Scripts
 
