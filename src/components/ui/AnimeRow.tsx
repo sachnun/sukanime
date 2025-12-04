@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, FreeMode } from 'swiper/modules';
+import useSWRInfinite from 'swr/infinite';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import AnimeCard from './AnimeCard';
 import AnimeCardSkeleton from './Skeleton';
-import { AnimeCard as AnimeCardType } from '@/types/anime';
+import { AnimeCard as AnimeCardType, Pagination } from '@/types/anime';
 import type { Swiper as SwiperType } from 'swiper';
 
 import 'swiper/css';
@@ -22,13 +23,24 @@ interface AnimeRowProps {
   fetchUrl?: string; // API URL for infinite loading
 }
 
+interface ApiResponse {
+  success: boolean;
+  data: {
+    anime: AnimeCardType[];
+    pagination: Pagination;
+  };
+}
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+// In-memory store untuk posisi slide (mirip SWR cache)
+const slidePositionCache = new Map<string, number>();
+
 export default function AnimeRow({ title, anime, href, showEpisode = true, fetchUrl }: AnimeRowProps) {
   const [isDesktop, setIsDesktop] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [items, setItems] = useState<AnimeCardType[]>(anime);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(!!fetchUrl);
-  const [isLoading, setIsLoading] = useState(false);
+  const swiperRef = useRef<SwiperType | null>(null);
+  const cacheKey = fetchUrl || title; // Use title as fallback key
 
   useEffect(() => {
     const checkDesktop = () => setIsDesktop(window.innerWidth >= 768);
@@ -37,28 +49,70 @@ export default function AnimeRow({ title, anime, href, showEpisode = true, fetch
     return () => window.removeEventListener('resize', checkDesktop);
   }, []);
 
-  const loadMore = useCallback(async () => {
-    if (isLoading || !hasNextPage || !fetchUrl) return;
-
-    setIsLoading(true);
-    try {
-      const nextPage = currentPage + 1;
-      const res = await fetch(`${fetchUrl}?page=${nextPage}`);
-      const json = await res.json();
-
-      if (json.success && json.data) {
-        setItems((prev) => [...prev, ...json.data.anime]);
-        setCurrentPage(nextPage);
-        setHasNextPage(json.data.pagination.hasNextPage);
-      }
-    } catch (error) {
-      console.error('Failed to load more anime:', error);
-    } finally {
-      setIsLoading(false);
+  // SWR Infinite - only used when fetchUrl is provided
+  const getKey = (pageIndex: number, previousPageData: ApiResponse | null) => {
+    if (!fetchUrl) return null;
+    if (previousPageData && !previousPageData.data?.pagination?.hasNextPage) {
+      return null;
     }
-  }, [isLoading, hasNextPage, fetchUrl, currentPage]);
+    if (pageIndex === 0) return `${fetchUrl}?page=1`;
+    return `${fetchUrl}?page=${pageIndex + 1}`;
+  };
+
+  const { data, size, setSize, isValidating } = useSWRInfinite<ApiResponse>(
+    getKey,
+    fetcher,
+    {
+      fallbackData: fetchUrl
+        ? [
+            {
+              success: true,
+              data: {
+                anime: anime,
+                pagination: {
+                  currentPage: 1,
+                  hasNextPage: true,
+                  totalPages: 1,
+                  itemsPerPage: anime.length,
+                  hasPrevPage: false,
+                },
+              },
+            },
+          ]
+        : undefined,
+      revalidateFirstPage: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
+
+  // Combine items: use SWR data if fetchUrl exists, otherwise use props
+  const allAnime = fetchUrl
+    ? (data?.flatMap((page) => page.data?.anime ?? []) ?? anime)
+    : anime;
+
+  // Remove duplicates based on slug
+  const uniqueAnime = allAnime.filter(
+    (item, index, self) => index === self.findIndex((a) => a.slug === item.slug)
+  );
+
+  // Check if has next page
+  const lastPage = data?.[data.length - 1];
+  const hasNextPage = fetchUrl ? (lastPage?.data?.pagination?.hasNextPage ?? true) : false;
+  const isLoading = isValidating;
+
+  // Load more function
+  const loadMore = useCallback(() => {
+    if (!isLoading && hasNextPage && fetchUrl) {
+      setSize(size + 1);
+    }
+  }, [isLoading, hasNextPage, fetchUrl, setSize, size]);
 
   const handleSlideChange = (swiper: SwiperType) => {
+    // Save current position to cache
+    slidePositionCache.set(cacheKey, swiper.activeIndex);
+    
+    if (!fetchUrl) return;
     // Load more when reaching near the end (5 slides before end)
     const slidesFromEnd = swiper.slides.length - swiper.activeIndex - swiper.slidesPerViewDynamic();
     if (slidesFromEnd <= 5 && hasNextPage && !isLoading) {
@@ -66,12 +120,21 @@ export default function AnimeRow({ title, anime, href, showEpisode = true, fetch
     }
   };
 
-  if (!items || items.length === 0) return null;
+  const handleSwiperInit = (swiper: SwiperType) => {
+    swiperRef.current = swiper;
+    setIsReady(true);
+    
+    // Restore position from cache
+    const savedPosition = slidePositionCache.get(cacheKey);
+    if (savedPosition && savedPosition > 0) {
+      // Use setTimeout to ensure swiper is fully initialized
+      setTimeout(() => {
+        swiper.slideTo(savedPosition, 0); // 0 = no animation
+      }, 0);
+    }
+  };
 
-  // Remove duplicates based on slug
-  const uniqueAnime = items.filter(
-    (item, index, self) => index === self.findIndex((a) => a.slug === item.slug)
-  );
+  if (!uniqueAnime || uniqueAnime.length === 0) return null;
 
   return (
     <section className="py-4">
@@ -114,8 +177,8 @@ export default function AnimeRow({ title, anime, href, showEpisode = true, fetch
               enabled: true,
               momentumBounce: false,
             }}
-            onSwiper={() => setIsReady(true)}
-            onSlideChange={fetchUrl ? handleSlideChange : undefined}
+            onSwiper={handleSwiperInit}
+            onSlideChange={handleSlideChange}
             onReachEnd={fetchUrl ? loadMore : undefined}
             breakpoints={{
               480: {
