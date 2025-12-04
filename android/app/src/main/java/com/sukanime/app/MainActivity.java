@@ -12,6 +12,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.View;
+import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
@@ -33,6 +35,12 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Hide status bar - make app truly fullscreen
+        getWindow().setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        );
         
         // Handle back button
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
