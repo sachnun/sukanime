@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
+import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AnimeCard as AnimeCardType, Pagination } from '@/types/anime';
@@ -14,46 +15,80 @@ interface InfiniteAnimeGridProps {
   showEpisode?: boolean;
 }
 
+interface ApiResponse {
+  success: boolean;
+  data: {
+    anime: AnimeCardType[];
+    pagination: Pagination;
+  };
+}
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export default function InfiniteAnimeGrid({
   initialAnime,
   initialPagination,
   fetchUrl,
   showEpisode = true,
 }: InfiniteAnimeGridProps) {
-  const [anime, setAnime] = useState<AnimeCardType[]>(initialAnime);
-  const [pagination, setPagination] = useState<Pagination>(initialPagination);
-  const [isLoading, setIsLoading] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
 
+  // SWR Infinite untuk handle pagination
+  const getKey = (pageIndex: number, previousPageData: ApiResponse | null) => {
+    // Sudah sampai akhir
+    if (previousPageData && !previousPageData.data?.pagination?.hasNextPage) {
+      return null;
+    }
+    // Page pertama
+    if (pageIndex === 0) return `${fetchUrl}?page=1`;
+    // Page selanjutnya
+    return `${fetchUrl}?page=${pageIndex + 1}`;
+  };
+
+  const { data, size, setSize, isValidating } = useSWRInfinite<ApiResponse>(
+    getKey,
+    fetcher,
+    {
+      fallbackData: [
+        {
+          success: true,
+          data: {
+            anime: initialAnime,
+            pagination: initialPagination,
+          },
+        },
+      ],
+      revalidateFirstPage: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
+
+  // Gabungkan semua anime dari semua pages
+  const allAnime = data?.flatMap((page) => page.data?.anime ?? []) ?? [];
+  
   // Remove duplicates based on slug
-  const uniqueAnime = anime.filter(
+  const uniqueAnime = allAnime.filter(
     (item, index, self) => index === self.findIndex((a) => a.slug === item.slug)
   );
 
-  const loadMore = useCallback(async () => {
-    if (isLoading || !pagination.hasNextPage) return;
+  // Cek apakah masih ada page selanjutnya
+  const lastPage = data?.[data.length - 1];
+  const hasNextPage = lastPage?.data?.pagination?.hasNextPage ?? false;
+  const isLoading = isValidating;
 
-    setIsLoading(true);
-    try {
-      const nextPage = pagination.currentPage + 1;
-      const res = await fetch(`${fetchUrl}?page=${nextPage}`);
-      const json = await res.json();
-
-      if (json.success && json.data) {
-        setAnime((prev) => [...prev, ...json.data.anime]);
-        setPagination(json.data.pagination);
-      }
-    } catch (error) {
-      console.error('Failed to load more anime:', error);
-    } finally {
-      setIsLoading(false);
+  // Load more function
+  const loadMore = useCallback(() => {
+    if (!isLoading && hasNextPage) {
+      setSize(size + 1);
     }
-  }, [isLoading, pagination, fetchUrl]);
+  }, [isLoading, hasNextPage, setSize, size]);
 
+  // Intersection Observer untuk infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && pagination.hasNextPage && !isLoading) {
+        if (entries[0].isIntersecting && hasNextPage && !isLoading) {
           loadMore();
         }
       },
@@ -65,7 +100,7 @@ export default function InfiniteAnimeGrid({
     }
 
     return () => observer.disconnect();
-  }, [loadMore, pagination.hasNextPage, isLoading]);
+  }, [loadMore, hasNextPage, isLoading]);
 
   if (!uniqueAnime || uniqueAnime.length === 0) {
     return (
@@ -79,7 +114,11 @@ export default function InfiniteAnimeGrid({
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {uniqueAnime.map((item) => (
-          <Link key={item.slug} href={`/anime/${item.slug}`} className="group block">
+          <Link
+            key={item.slug}
+            href={`/anime/${item.slug}`}
+            className="group block"
+          >
             <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-card">
               <Image
                 src={item.poster}
@@ -125,17 +164,20 @@ export default function InfiniteAnimeGrid({
             )}
           </Link>
         ))}
-        
+
         {/* Loading skeletons inside grid */}
-        {isLoading && Array.from({ length: 6 }).map((_, i) => (
-          <AnimeCardSkeleton key={`skeleton-${i}`} />
-        ))}
+        {isLoading &&
+          Array.from({ length: 6 }).map((_, i) => (
+            <AnimeCardSkeleton key={`skeleton-${i}`} />
+          ))}
       </div>
 
       {/* Loader trigger & end message */}
       <div ref={loaderRef} className="py-8">
-        {!pagination.hasNextPage && uniqueAnime.length > 0 && (
-          <p className="text-muted text-sm text-center">Semua anime sudah ditampilkan</p>
+        {!hasNextPage && uniqueAnime.length > 0 && (
+          <p className="text-muted text-sm text-center">
+            Semua anime sudah ditampilkan
+          </p>
         )}
       </div>
     </>
