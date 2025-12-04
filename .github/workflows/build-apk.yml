@@ -38,6 +38,18 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
+          # Get version from tag (v1.0.4 -> 1.0.4)
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "Building version: $VERSION"
+          
+          # Update package.json version
+          npm pkg set version=$VERSION
+          
+          # Update Android versionName and versionCode
+          VERSION_CODE=$(echo $VERSION | awk -F. '{printf "%d%02d%02d", $1, $2, $3}')
+          sed -i "s/versionName \".*\"/versionName \"$VERSION\"/" android/app/build.gradle
+          sed -i "s/versionCode .*/versionCode $VERSION_CODE/" android/app/build.gradle
+          
           npm ci
           mkdir -p out && echo '<!DOCTYPE html><html><head></head><body></body></html>' > out/index.html
           npx cap sync android
@@ -49,6 +61,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=${GITHUB_REF_NAME#v}
           mv android/app/build/outputs/apk/release/app-release.apk sukanime-v${VERSION}.apk
           gh release create ${{ github.ref_name }} sukanime-v${VERSION}.apk --generate-notes
