@@ -3,6 +3,8 @@ name: Build Android APK
 on:
   push:
     branches: [feature/android-apk, main]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main]
   workflow_dispatch: # Manual trigger
@@ -14,7 +16,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build Debug APK
+    name: Build APK
     runs-on: ubuntu-latest
     
     steps:
@@ -49,6 +51,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Sync version to Android
+        run: node scripts/sync-version.js
+
       - name: Create web assets directory
         run: |
           mkdir -p out
@@ -64,14 +69,37 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug
 
+      - name: Get version info
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+
+      - name: Rename APK
+        run: |
+          mv android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/sukanime-v${{ steps.version.outputs.version }}.apk
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sukanime-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: sukanime-v${{ steps.version.outputs.version }}-apk
+          path: android/app/build/outputs/apk/debug/sukanime-v${{ steps.version.outputs.version }}.apk
           retention-days: 30
 
-      - name: Get APK info
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: android/app/build/outputs/apk/debug/sukanime-v${{ steps.version.outputs.version }}.apk
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build summary
         run: |
-          echo "APK built successfully!"
-          ls -lh android/app/build/outputs/apk/debug/
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK Size:** $(ls -lh android/app/build/outputs/apk/debug/sukanime-v${{ steps.version.outputs.version }}.apk | awk '{print $5}')" >> $GITHUB_STEP_SUMMARY

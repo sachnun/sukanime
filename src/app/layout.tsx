@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import { MusicPlayerProvider } from "@/lib/MusicPlayerContext";
 import MusicPlayer from "@/components/ui/MusicPlayer";
+import UpdateChecker from "@/components/ui/UpdateChecker";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -51,6 +52,7 @@ export default function RootLayout({
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <MusicPlayer />
+          <UpdateChecker />
         </MusicPlayerProvider>
       </body>
     </html>
