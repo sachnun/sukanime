@@ -8,19 +8,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.view.Window;
-import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.content.FileProvider;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 import com.getcapacitor.BridgeActivity;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,20 +32,7 @@ public class MainActivity extends BridgeActivity {
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Disable edge-to-edge BEFORE super.onCreate
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
-        
         super.onCreate(savedInstanceState);
-        
-        // Setup status bar colors
-        Window window = getWindow();
-        window.setStatusBarColor(Color.parseColor("#141414"));
-        window.setNavigationBarColor(Color.parseColor("#141414"));
-        
-        // White icons on dark background
-        WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(window, window.getDecorView());
-        controller.setAppearanceLightStatusBars(false);
-        controller.setAppearanceLightNavigationBars(false);
         
         // Handle back button
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
