@@ -11,8 +11,8 @@ interface VersionInfo {
   releaseNotes: string;
 }
 
-// Current app version (will be compared with server version)
-const CURRENT_VERSION = '1.0.0';
+// Current app version from package.json (injected at build time)
+const CURRENT_VERSION = process.env.APP_VERSION || '1.0.0';
 
 export default function UpdateChecker() {
   const [updateAvailable, setUpdateAvailable] = useState(false);

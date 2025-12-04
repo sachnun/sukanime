@@ -14,6 +14,9 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  env: {
+    APP_VERSION: process.env.npm_package_version || require('./package.json').version,
+  },
   images: {
     remotePatterns: [
       {
