@@ -1,6 +1,6 @@
 # Sukanime
 
-A modern Netflix-style anime streaming website built with Next.js 16 and Tailwind CSS.
+A modern Netflix-style anime streaming app built with Next.js 16 and Tailwind CSS. Available as web app and Android APK.
 
 ## Features
 
@@ -12,6 +12,8 @@ A modern Netflix-style anime streaming website built with Next.js 16 and Tailwin
 - Bookmark favorite anime
 - Watch history tracking
 - Responsive design for mobile and desktop
+- PWA support (installable from browser)
+- Native Android app
 
 ## Tech Stack
 
@@ -20,6 +22,8 @@ A modern Netflix-style anime streaming website built with Next.js 16 and Tailwin
 - **Icons:** Lucide React
 - **Carousel:** Swiper.js
 - **Language:** TypeScript
+- **Mobile:** Capacitor (Android)
+- **PWA:** @ducanh2912/next-pwa
 
 ## Data Source
 
@@ -57,6 +61,35 @@ npm run dev
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
+## Android APK
+
+### Download APK
+
+You can download the latest APK from [GitHub Actions](https://github.com/sachnun/sukanime/actions/workflows/build-apk.yml):
+
+1. Go to the **Actions** tab
+2. Click on the latest successful **Build Android APK** workflow
+3. Download the **sukanime-debug-apk** artifact
+
+### Build APK Locally
+
+Requirements:
+- Java JDK 21
+- Android SDK
+
+```bash
+# Install dependencies
+npm install
+
+# Sync Capacitor
+npm run cap:sync
+
+# Build APK (requires Android SDK)
+cd android && ./gradlew assembleDebug
+```
+
+The APK will be at `android/app/build/outputs/apk/debug/app-debug.apk`
+
 ## Scripts
 
 | Script | Description |
@@ -65,6 +98,8 @@ npm run dev
 | `npm run build` | Build for production |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
+| `npm run cap:sync` | Sync Capacitor with native projects |
+| `npm run generate-icons` | Generate app icons |
 
 ## Folder Structure
 
@@ -85,6 +120,11 @@ src/
 │   └── ui/                 # UI components
 ├── lib/                    # Utilities and API
 └── types/                  # TypeScript types
+
+android/                    # Android native project (Capacitor)
+public/
+├── icons/                  # PWA icons
+└── manifest.json           # PWA manifest
 ```
 
 ## License
