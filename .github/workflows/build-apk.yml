@@ -2,11 +2,8 @@ name: Build Android APK
 
 on:
   push:
-    branches: [feature/android-apk, main]
     tags:
       - 'v*'
-  pull_request:
-    branches: [main]
   workflow_dispatch: # Manual trigger
 
 # Cancel in-progress runs when a new commit is pushed
