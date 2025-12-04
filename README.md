@@ -1,5 +1,7 @@
 # Sukanime
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsachnun%2Fsukanime)
+
 A modern Netflix-style anime streaming app built with Next.js 16 and Tailwind CSS. Available as web app and Android APK.
 
 ## Features
