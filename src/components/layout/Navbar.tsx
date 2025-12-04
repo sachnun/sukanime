@@ -73,13 +73,13 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50">
       {/* Background layer - smooth transition */}
       <div 
-        className={`absolute inset-0 transition-opacity duration-300 bg-background/95 backdrop-blur-sm shadow-lg ${
-          isScrolled ? 'opacity-100' : 'opacity-0'
+        className={`absolute inset-0 transition-opacity duration-300 shadow-lg ${
+          isScrolled || isMobileMenuOpen ? 'opacity-100 bg-background' : 'opacity-0 bg-background/95 backdrop-blur-sm'
         }`}
       />
       <div 
         className={`absolute inset-0 transition-opacity duration-300 bg-gradient-to-b from-black/80 to-transparent ${
-          isScrolled ? 'opacity-0' : 'opacity-100'
+          isScrolled || isMobileMenuOpen ? 'opacity-0' : 'opacity-100'
         }`}
       />
       
@@ -163,7 +163,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="relative md:hidden bg-background/95 backdrop-blur-sm border-t border-border animate-fadeIn">
+        <div className="relative md:hidden bg-background border-b border-border animate-fadeIn">
           <div className="px-4 py-4 space-y-3">
             {navLinks.map((link) => {
               const Icon = link.icon;
