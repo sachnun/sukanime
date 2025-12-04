@@ -55,3 +55,4 @@ android/local.properties
 *.apk
 *.aab
 *.keystore
+keystore-base64.txt

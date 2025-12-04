@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build APK
+    name: Build Release APK
     runs-on: ubuntu-latest
     
     steps:
@@ -62,12 +62,21 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/sukanime-release.keystore
+
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: Build Debug APK
+      - name: Build Release APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        env:
+          KEYSTORE_FILE: ${{ github.workspace }}/android/app/sukanime-release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
 
       - name: Get version info
         id: version
@@ -78,20 +87,20 @@ jobs:
 
       - name: Rename APK
         run: |
-          mv android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/sukanime-v${{ steps.version.outputs.version }}.apk
+          mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/sukanime-v${{ steps.version.outputs.version }}.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: sukanime-v${{ steps.version.outputs.version }}-apk
-          path: android/app/build/outputs/apk/debug/sukanime-v${{ steps.version.outputs.version }}.apk
+          path: android/app/build/outputs/apk/release/sukanime-v${{ steps.version.outputs.version }}.apk
           retention-days: 30
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: android/app/build/outputs/apk/debug/sukanime-v${{ steps.version.outputs.version }}.apk
+          files: android/app/build/outputs/apk/release/sukanime-v${{ steps.version.outputs.version }}.apk
           generate_release_notes: true
           draft: false
           prerelease: false
@@ -102,4 +111,5 @@ jobs:
         run: |
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "- **Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **APK Size:** $(ls -lh android/app/build/outputs/apk/debug/sukanime-v${{ steps.version.outputs.version }}.apk | awk '{print $5}')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Type:** Release (Signed)" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK Size:** $(ls -lh android/app/build/outputs/apk/release/sukanime-v${{ steps.version.outputs.version }}.apk | awk '{print $5}')" >> $GITHUB_STEP_SUMMARY
