@@ -37,19 +37,17 @@ public class MainActivity extends BridgeActivity {
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Disable edge-to-edge BEFORE super.onCreate
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+        
         super.onCreate(savedInstanceState);
         
-        // Setup status bar - solid color, content below status bar
+        // Setup status bar colors
         Window window = getWindow();
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(Color.parseColor("#141414"));
         window.setNavigationBarColor(Color.parseColor("#141414"));
         
-        // IMPORTANT: This ensures content does NOT go behind status bar
-        WindowCompat.setDecorFitsSystemWindows(window, true);
-        
-        // Set light icons on dark background (white icons)
+        // White icons on dark background
         WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(window, window.getDecorView());
         controller.setAppearanceLightStatusBars(false);
         controller.setAppearanceLightNavigationBars(false);
