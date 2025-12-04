@@ -9,11 +9,7 @@
     "lint": "eslint",
     "cap:sync": "npx cap sync",
     "cap:android": "npx cap open android",
-    "generate-icons": "node scripts/generate-icons.js",
-    "sync-version": "node scripts/sync-version.js",
-    "version:patch": "npm version patch && npm run sync-version",
-    "version:minor": "npm version minor && npm run sync-version",
-    "version:major": "npm version major && npm run sync-version"
+    "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",

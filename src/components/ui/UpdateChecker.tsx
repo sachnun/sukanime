@@ -3,20 +3,19 @@
 import { useEffect, useState } from 'react';
 import { Download, X } from 'lucide-react';
 
-interface VersionInfo {
+interface ReleaseInfo {
   version: string;
-  versionCode: number;
-  releaseDate: string;
   downloadUrl: string;
   releaseNotes: string;
 }
 
 // Current app version from package.json (injected at build time)
 const CURRENT_VERSION = process.env.APP_VERSION || '1.0.0';
+const GITHUB_REPO = 'sachnun/sukanime';
 
 export default function UpdateChecker() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
+  const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [isNativeApp, setIsNativeApp] = useState(false);
 
@@ -35,14 +34,25 @@ export default function UpdateChecker() {
     
     const checkUpdate = async () => {
       try {
-        const res = await fetch('/version.json', { cache: 'no-store' });
+        // Fetch latest release from GitHub API
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
         if (!res.ok) return;
         
-        const data: VersionInfo = await res.json();
+        const data = await res.json();
+        const latestVersion = data.tag_name?.replace('v', '') || '';
+        
+        // Find APK asset
+        const apkAsset = data.assets?.find((asset: { name: string }) => 
+          asset.name.endsWith('.apk')
+        );
         
         // Compare versions
-        if (data.version !== CURRENT_VERSION && data.version !== dismissedVersion) {
-          setVersionInfo(data);
+        if (latestVersion && latestVersion !== CURRENT_VERSION && latestVersion !== dismissedVersion) {
+          setReleaseInfo({
+            version: latestVersion,
+            downloadUrl: apkAsset?.browser_download_url || data.html_url,
+            releaseNotes: data.html_url,
+          });
           setUpdateAvailable(true);
         }
       } catch (error) {
@@ -54,19 +64,19 @@ export default function UpdateChecker() {
   }, []);
 
   const handleDismiss = () => {
-    if (versionInfo) {
-      localStorage.setItem('dismissedUpdateVersion', versionInfo.version);
+    if (releaseInfo) {
+      localStorage.setItem('dismissedUpdateVersion', releaseInfo.version);
     }
     setDismissed(true);
   };
 
   const handleUpdate = () => {
-    if (versionInfo?.downloadUrl) {
-      window.open(versionInfo.downloadUrl, '_blank');
+    if (releaseInfo?.downloadUrl) {
+      window.open(releaseInfo.downloadUrl, '_blank');
     }
   };
 
-  if (!isNativeApp || !updateAvailable || dismissed || !versionInfo) {
+  if (!isNativeApp || !updateAvailable || dismissed || !releaseInfo) {
     return null;
   }
 
@@ -77,7 +87,7 @@ export default function UpdateChecker() {
           <div className="flex-1">
             <h3 className="font-semibold text-white">Update Available</h3>
             <p className="text-sm text-muted mt-1">
-              Version {versionInfo.version} is now available. You have version {CURRENT_VERSION}.
+              Version {releaseInfo.version} is now available. You have version {CURRENT_VERSION}.
             </p>
           </div>
           <button
@@ -97,7 +107,7 @@ export default function UpdateChecker() {
             Download Update
           </button>
           <a
-            href={versionInfo.releaseNotes}
+            href={releaseInfo.releaseNotes}
             target="_blank"
             rel="noopener noreferrer"
             className="py-2 px-4 bg-secondary hover:bg-muted text-white rounded-lg transition-colors"
