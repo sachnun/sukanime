@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebView;
@@ -40,20 +39,20 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Force status bar to show with solid color
+        // Setup status bar - solid color, content below status bar
         Window window = getWindow();
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.setStatusBarColor(Color.parseColor("#0a0a0a"));
-        window.setNavigationBarColor(Color.parseColor("#0a0a0a"));
+        window.setStatusBarColor(Color.parseColor("#141414"));
+        window.setNavigationBarColor(Color.parseColor("#141414"));
         
-        // Ensure content doesn't go behind status bar
+        // IMPORTANT: This ensures content does NOT go behind status bar
         WindowCompat.setDecorFitsSystemWindows(window, true);
         
-        // Set light icons on dark background
-        View decorView = window.getDecorView();
-        WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(window, decorView);
+        // Set light icons on dark background (white icons)
+        WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(window, window.getDecorView());
         controller.setAppearanceLightStatusBars(false);
+        controller.setAppearanceLightNavigationBars(false);
         
         // Handle back button
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
