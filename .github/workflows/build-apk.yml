@@ -4,9 +4,8 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch:
 
-# Cancel in-progress runs when a new commit is pushed
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -16,26 +15,22 @@ jobs:
     name: Build Release APK
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required for creating releases
+      contents: write
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Setup Java JDK
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v3
 
       - name: Cache Gradle
         uses: actions/cache@v4
@@ -44,71 +39,25 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-${{ runner.os }}-
+          restore-keys: gradle-${{ runner.os }}-
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Sync version to Android
-        run: node scripts/sync-version.js
-
-      - name: Create web assets directory
-        run: |
-          mkdir -p out
-          echo '<!DOCTYPE html><html><head><title>Sukanime</title></head><body></body></html>' > out/index.html
-
-      - name: Sync Capacitor
-        run: npx cap sync android
-
-      - name: Decode Keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/sukanime-release.keystore
-
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
-
-      - name: Build Release APK
-        working-directory: android
+      - name: Setup & Build
         env:
-          KEYSTORE_FILE: ${{ github.workspace }}/android/app/sukanime-release.keystore
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew assembleRelease
-
-      - name: Get version info
-        id: version
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Building version: $VERSION"
-
-      - name: Rename APK
-        run: |
-          mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/sukanime-v${{ steps.version.outputs.version }}.apk
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sukanime-v${{ steps.version.outputs.version }}-apk
-          path: android/app/build/outputs/apk/release/sukanime-v${{ steps.version.outputs.version }}.apk
-          retention-days: 30
+          npm ci
+          mkdir -p out && echo '<!DOCTYPE html><html><head></head><body></body></html>' > out/index.html
+          npx cap sync android
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/sukanime-release.keystore
+          export KEYSTORE_FILE="${{ github.workspace }}/android/app/sukanime-release.keystore"
+          cd android && chmod +x gradlew && ./gradlew assembleRelease
 
       - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: android/app/build/outputs/apk/release/sukanime-v${{ steps.version.outputs.version }}.apk
-          generate_release_notes: true
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build summary
         run: |
-          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Build Type:** Release (Signed)" >> $GITHUB_STEP_SUMMARY
-          echo "- **APK Size:** $(ls -lh android/app/build/outputs/apk/release/sukanime-v${{ steps.version.outputs.version }}.apk | awk '{print $5}')" >> $GITHUB_STEP_SUMMARY
+          VERSION=$(node -p "require('./package.json').version")
+          mv android/app/build/outputs/apk/release/app-release.apk sukanime-v${VERSION}.apk
+          gh release create ${{ github.ref_name }} sukanime-v${VERSION}.apk --generate-notes
