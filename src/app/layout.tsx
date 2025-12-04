@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -10,6 +10,14 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#E50914",
+};
+
 export const metadata: Metadata = {
   title: {
     default: "Sukanime",
@@ -17,7 +25,15 @@ export const metadata: Metadata = {
   },
   description: "Nonton anime subtitle Indonesia gratis dengan kualitas terbaik. Streaming anime online terlengkap.",
   keywords: ["anime", "nonton anime", "streaming anime", "anime sub indo", "anime subtitle indonesia"],
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Sukanime",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({
@@ -27,6 +43,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
+      <head>
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+      </head>
       <body className={`${inter.variable} antialiased`}>
         <MusicPlayerProvider>
           <Navbar />

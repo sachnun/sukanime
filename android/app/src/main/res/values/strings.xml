@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sukanime</string>
+    <string name="title_activity_main">Sukanime</string>
+    <string name="package_name">com.sukanime.app</string>
+    <string name="custom_url_scheme">com.sukanime.app</string>
+</resources>
