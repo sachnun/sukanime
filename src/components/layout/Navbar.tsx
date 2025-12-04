@@ -91,7 +91,7 @@ export default function Navbar() {
             {isWatchPage ? (
               <Clapperboard className="w-7 h-7 text-white/80" />
             ) : (
-              <span className="text-2xl font-bold text-primary">SUKANIME</span>
+              <span className={`text-2xl font-bold transition-colors duration-300 ${isScrolled ? 'text-white' : 'text-primary'}`}>SUKANIME</span>
             )}
           </Link>
 
