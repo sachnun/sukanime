@@ -1,12 +1,11 @@
 package com.sukanime.app;
 
+import android.os.Build;
 import android.os.Bundle;
-import android.webkit.WebView;
 import android.view.View;
 import android.view.WindowManager;
-import android.os.Build;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
+import android.webkit.WebView;
+import androidx.activity.OnBackPressedCallback;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -17,26 +16,32 @@ public class MainActivity extends BridgeActivity {
         // Make status bar visible with dark background
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             getWindow().setStatusBarColor(0xFF0a0a0a);
             getWindow().setNavigationBarColor(0xFF0a0a0a);
         }
         
         // Set light status bar icons (white icons on dark background)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-            if (controller != null) {
-                controller.setAppearanceLightStatusBars(false);
+            View decorView = getWindow().getDecorView();
+            // Clear SYSTEM_UI_FLAG_LIGHT_STATUS_BAR to get white icons
+            decorView.setSystemUiVisibility(
+                decorView.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            );
+        }
+        
+        // Handle back button with modern callback
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                WebView webView = getBridge().getWebView();
+                if (webView != null && webView.canGoBack()) {
+                    webView.goBack();
+                } else {
+                    // Exit the app
+                    finish();
+                }
             }
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        WebView webView = getBridge().getWebView();
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
+        });
     }
 }
