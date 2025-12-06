@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const BASE_URL = 'https://otakudesu-api.zeabur.app';
+import { BASE_URL } from '@/lib/api';
 
 export async function POST(request: NextRequest) {
   try {

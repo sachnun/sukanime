@@ -11,7 +11,7 @@ import {
   ResolveStreamingResponse,
 } from '@/types/anime';
 
-const BASE_URL = 'https://otakudesu-api.zeabur.app';
+export const BASE_URL = 'https://otakudesu-api.dakunesu.workers.dev';
 
 async function fetchApi<T>(endpoint: string): Promise<T> {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
