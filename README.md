@@ -31,7 +31,7 @@ A modern Netflix-style anime streaming app built with Next.js 16 and Tailwind CS
 
 Anime data is provided by [Otakudesu API](https://github.com/sachnun/otakudesu-api) - a REST API for scraping anime data from Otakudesu, built with NestJS.
 
-API Endpoint: `https://otakudesu-api.zeabur.app`
+API Endpoint: `https://otakudesu-api.dakunesu.workers.dev`
 
 ## Getting Started
 
