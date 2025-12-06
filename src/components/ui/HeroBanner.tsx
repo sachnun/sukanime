@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Play, Info, Star } from 'lucide-react';
 import { AnimeCard } from '@/types/anime';
+import { BASE_URL } from '@/lib/api';
 
 import 'swiper/css';
 import 'swiper/css/effect-fade';
@@ -34,7 +35,7 @@ export default function HeroBanner({ anime }: HeroBannerProps) {
           if (item.latestEpisodeSlug) return item;
           
           try {
-            const res = await fetch(`https://otakudesu-api.zeabur.app/api/anime/${item.slug}`);
+            const res = await fetch(`https://otakudesu-api.dakunesu.workers.dev/api/anime/${item.slug}`);
             const json = await res.json();
             if (json.success && json.data.episodes?.[0]) {
               return {
