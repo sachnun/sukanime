@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { getEpisodeDetail, getAnimeDetail } from '@/lib/api';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import VideoPlayer from './VideoPlayer';
 import EpisodeNavigation from './EpisodeNavigation';
@@ -39,7 +39,7 @@ async function WatchContent({ slug }: { slug: string }) {
       // Poster fetch failed, continue without it
     }
   } catch {
-    notFound();
+    redirect('/');
   }
 
   return (

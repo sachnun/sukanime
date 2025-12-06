@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { getAnimeDetail } from '@/lib/api';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Star, Calendar, Clock, Film, Building2, Users } from 'lucide-react';
@@ -35,7 +35,7 @@ async function AnimeDetailContent({ slug }: { slug: string }) {
   try {
     anime = await getAnimeDetail(slug);
   } catch {
-    notFound();
+    redirect('/');
   }
 
   return (
